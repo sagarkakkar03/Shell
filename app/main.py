@@ -6,10 +6,12 @@ def main():
     while True:
         sys.stdout.write('$ ')
         command = sys.stdin.readline().strip()
-        if command:
+        if command == "exit":
+            break
+        else:
             sys.stdout.write(f"{command}: command not found\n")
             sys.stdout.flush()
-        
+    pass
 
 
 
