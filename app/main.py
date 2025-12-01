@@ -8,6 +8,10 @@ def main():
         command = sys.stdin.readline().strip()
         if command == "exit":
             break
+        elif command[:4] == "echo":
+            output = command[5:]
+            sys.stdout.write(f"{output}\n")
+            sys.stdout.flush()
         else:
             sys.stdout.write(f"{command}: command not found\n")
             sys.stdout.flush()
