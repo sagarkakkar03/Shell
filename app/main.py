@@ -39,8 +39,10 @@ def handle_type(args: str):
         sys.stdout.write(f"{args.strip()}: not found" + "\n")
     return
 
-def handle_external(args: str):
-    return shutil.which(args)
+def handle_external(cmd: str, args: str):
+    sys.stdout.write(cmd + " " + args + "\n")
+    return shutil.which(cmd)
+
 def handle_exit(args: str):
     sys.exit(0)
 
@@ -53,7 +55,10 @@ def handle_unknown(args: str):
 def handle_command(cmd: str, command_type: str, args: str):
     handler_name = f"handle_{command_type.value}"
     if handler_name == "handle_unknown":
-        return handle_unknown(cmd)
+        path = shutil.which(cmd)
+        if not path:
+            return handle_unknown(cmd)
+        handle_external(cmd, args)
     return globals()[handler_name](args)
 
 def main():
