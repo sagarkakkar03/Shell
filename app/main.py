@@ -40,7 +40,8 @@ def handle_type(args: str):
     return
 
 def handle_external(cmd: str, args: str):
-    sys.stdout.write(cmd + " " + args + "\n")
+    program_length = len(args) + 1
+    sys.stdout.write("Program was passed " + str(program_length) + " args (including program name)." )
     return shutil.which(cmd)
 
 def handle_exit(args: str):
