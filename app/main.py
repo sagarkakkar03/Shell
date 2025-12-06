@@ -1,5 +1,6 @@
 import sys
 from enum import Enum
+import shutil
 
 def parse_command(command: str) -> tuple[str, str]:
     command = command.strip()
@@ -17,6 +18,7 @@ class CommandType(Enum):
     CAT = "cat"
     UNKNOWN = "unknown"
     TYPE = "type"
+    External = "external"
 
 def command_type(cmd: str) -> str:
     for ctype in CommandType:
@@ -29,14 +31,16 @@ def handle_type(args: str):
         sys.stdout.write("echo is a shell builtin" + "\n")
     elif args.strip() == "exit":
         sys.stdout.write("exit is a shell builtin" + "\n")
-    elif args.strip() == "cat":
-        sys.stdout.write("cat is a shell builtin" + "\n")
     elif args.strip() == "type":
         sys.stdout.write("type is a shell builtin" + "\n")
+    elif handle_external(args.strip()):
+        sys.stdout.write(f"{args.strip()} is {handle_external(args.strip())}" + "\n")
     else:
         sys.stdout.write(f"{args.strip()}: not found" + "\n")
     return
 
+def handle_external(args: str):
+    return shutil.which(args)
 def handle_exit(args: str):
     sys.exit(0)
 
