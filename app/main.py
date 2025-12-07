@@ -19,6 +19,7 @@ class CommandType(Enum):
     TYPE = "type"
     External = "external"
     PWD = "pwd"
+    CHANGE_DIRECTORY = "cd"
 
 def command_type(cmd: str) -> str:
     for ctype in CommandType:
@@ -51,6 +52,14 @@ def handle_external(cmd: str, args: str):
     path = shutil.which(cmd)
     subprocess.run([cmd, *args.split()], executable=path)
     return path
+
+def handle_cd(args: str):
+    path = args.strip()
+    try:
+        os.chdir(path)
+    except FileNotFoundError:
+        sys.stdout.write(f"cd: {path}: No such file or directory" + "\n")
+    
 
 def handle_exit(args: str):
     sys.exit(0)
