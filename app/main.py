@@ -1,6 +1,7 @@
 import sys
 from enum import Enum
 import shutil
+import subprocess
 
 def parse_command(command: str) -> tuple[str, str]:
     command = command.strip()
@@ -27,22 +28,24 @@ def command_type(cmd: str) -> str:
     return ctype.UNKNOWN
 
 def handle_type(args: str):
+    path = shutil.which(args.strip())
     if args.strip() == "echo":
         sys.stdout.write("echo is a shell builtin" + "\n")
     elif args.strip() == "exit":
         sys.stdout.write("exit is a shell builtin" + "\n")
     elif args.strip() == "type":
         sys.stdout.write("type is a shell builtin" + "\n")
-    elif handle_external(args.strip()):
-        sys.stdout.write(f"{args.strip()} is {handle_external(args.strip())}" + "\n")
+    elif path:
+        sys.stdout.write(f"{args.strip()} is {path}" + "\n")
     else:
         sys.stdout.write(f"{args.strip()}: not found" + "\n")
     return
 
 def handle_external(cmd: str, args: str):
-    program_length = len(args) + 1
-    sys.stdout.write("Program was passed " + str(program_length) + " args (including program name)." )
-    return shutil.which(cmd)
+    program_length = len(args.split()) + 1
+    path = shutil.which(cmd)
+    subprocess.run([cmd, *args.split()], executable=path)
+    return path
 
 def handle_exit(args: str):
     sys.exit(0)
@@ -60,7 +63,8 @@ def handle_command(cmd: str, command_type: str, args: str):
         if not path:
             return handle_unknown(cmd)
         handle_external(cmd, args)
-    return globals()[handler_name](args)
+    else:    
+        return globals()[handler_name](args)
 
 def main():
     while True:
@@ -70,9 +74,6 @@ def main():
         cmd_type = command_type(cmd)
         handle_command(cmd, cmd_type, args)
     pass
-
-
-
 
 if __name__ == "__main__":
     main()
