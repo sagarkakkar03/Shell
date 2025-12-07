@@ -1,7 +1,5 @@
-import sys
+import subprocess, os, sys, shutil
 from enum import Enum
-import shutil
-import subprocess
 
 def parse_command(command: str) -> tuple[str, str]:
     command = command.strip()
@@ -20,6 +18,7 @@ class CommandType(Enum):
     UNKNOWN = "unknown"
     TYPE = "type"
     External = "external"
+    PWD = "pwd"
 
 def command_type(cmd: str) -> str:
     for ctype in CommandType:
@@ -35,11 +34,17 @@ def handle_type(args: str):
         sys.stdout.write("exit is a shell builtin" + "\n")
     elif args.strip() == "type":
         sys.stdout.write("type is a shell builtin" + "\n")
+    elif args.strip() == "pwd":
+        sys.stdout.write("pwd is a shell builtin" + "\n")
     elif path:
         sys.stdout.write(f"{args.strip()} is {path}" + "\n")
     else:
         sys.stdout.write(f"{args.strip()}: not found" + "\n")
     return
+
+def handle_pwd(args: str):
+    current_path = os.getcwd()
+    sys.stdout.write(current_path + "\n")
 
 def handle_external(cmd: str, args: str):
     program_length = len(args.split()) + 1
