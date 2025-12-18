@@ -1,20 +1,18 @@
-import subprocess, os, sys, shutil
+import subprocess, os, sys, shutil, shlex
 from enum import Enum
 
-def parse_command(command: str) -> tuple[str, str]:
+def parse_command(command: str) -> tuple[str, list[str]]:
     command = command.strip()
     if not command:
-        return ("", "")
-    parts = command.split(" ", 1)
+        return ("", [])
+    parts = shlex.split(command)
     if len(parts) == 1:
-        return (parts[0], "")
+        return (parts[0], [])
     else:
-        return (parts[0], parts[1])
+        return (parts[0], parts[1:])
 
 class CommandType(Enum):
     EXIT = "exit"
-    ECHO = "echo"
-    CAT = "cat"
     UNKNOWN = "unknown"
     TYPE = "type"
     External = "external"
@@ -43,14 +41,14 @@ def handle_type(args: str):
         sys.stdout.write(f"{args.strip()}: not found" + "\n")
     return
 
-def handle_pwd(args: str):
+def handle_pwd():
     current_path = os.getcwd()
     sys.stdout.write(current_path + "\n")
 
 def handle_external(cmd: str, args: str):
-    program_length = len(args.split()) + 1
+    program_length = len(args) + 1
     path = shutil.which(cmd)
-    subprocess.run([cmd, *args.split()], executable=path)
+    subprocess.run([cmd, *args], executable=path)
     return path
 
 def handle_cd(args: str):
@@ -60,13 +58,9 @@ def handle_cd(args: str):
         os.chdir(path)
     except FileNotFoundError:
         sys.stdout.write(f"cd: {path}: No such file or directory" + "\n")
-    
 
-def handle_exit(args: str):
+def handle_exit():
     sys.exit(0)
-
-def handle_echo(args: str):
-    sys.stdout.write(args + "\n")
 
 def handle_unknown(args: str):
     sys.stdout.write(args + ": command not found" + "\n")
@@ -78,17 +72,23 @@ def handle_command(cmd: str, command_type: str, args: str):
         if not path:
             return handle_unknown(cmd)
         handle_external(cmd, args)
-    else:    
-        return globals()[handler_name](args)
-
+    else:  
+        return globals()[handler_name](*args)
+        
 def main():
     while True:
         sys.stdout.write('$ ')
         command = sys.stdin.readline()
+        if command == "":
+            break 
+        if not command.strip():
+            continue
         cmd, args = parse_command(command) 
         cmd_type = command_type(cmd)
-        handle_command(cmd, cmd_type, args)
+        try:
+            handle_command(cmd, cmd_type, args)
+        except OSError as error:
+            print('error', error)
     pass
-
 if __name__ == "__main__":
     main()
